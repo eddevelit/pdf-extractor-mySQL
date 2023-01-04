@@ -62,6 +62,29 @@ const obtenerId = (campo, valor, tabla) => {
     });
 };
 
+const mysqlSelect = (table, fields, where, extraParams) => {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((error, connection) => {
+            if (error){
+                reject(`No se pudo realizar la consulta: ${error}`);
+            }
+            else {
+                const selectQuery = `SELECT ${fields} FROM ${table} ${where} ${extraParams}`;
+                console.log(`Conexion correcta, realizando consulta => ${selectQuery} `)
+                connection.query(selectQuery, (err, result) => {
+                   if (err) {
+                       reject(`No se pudo realizar la consulta: ${err}`);
+                   } else {
+                       resolve(result);
+                   }
+                });
+            }
+        });
+    });
+}
+
+
+
 const mySQLInsert = (table, fields, values) => {
     return new Promise((resolve, reject) => {
         pool.getConnection((error, connection) => {
@@ -84,6 +107,7 @@ const mySQLInsert = (table, fields, values) => {
 }
 
 const processPDFDataIntoBD = async (pdfObject) => {
+
     let insertFields;
     let insertValues;
 
@@ -95,6 +119,12 @@ const processPDFDataIntoBD = async (pdfObject) => {
         insertValues = `'${pdfObject.datosGenerales.numeroExpediente}', '${pdfObject.datosGenerales.folio}', '${pdfObject.datosGenerales.juez}', '${pdfObject.datosGenerales.parteActora}', '${pdfObject.datosGenerales.parteDemandada}', '${pdfObject.datosGenerales.secretario}', '${tipoJuicioId}', '1', NOW(), NOW()`
         const insercionExpediente = await mySQLInsert(`expedientes`, insertFields, insertValues);
         console.log(insercionExpediente);
+
+
+
+        const [expediente] = await mysqlSelect(`expedientes`, `id`, ``, `order by id desc limit 1`);
+        console.log(`ExpedienteId: ${JSON.stringify(expediente.id)}`);
+
 
         return `PDF procesado a base de datos de forma exitosa`;
 

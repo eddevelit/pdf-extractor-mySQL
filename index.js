@@ -32,7 +32,7 @@ pdfExtractor
     });
     // console.log(`filteredElements: ${filteredElements}`);
     const pdfObject = convertPDFToObject(filteredElements);
-    console.log(`object: ${JSON.stringify(pdfObject)}`);
+    console.log(`Componentes del PDF: ${JSON.stringify(pdfObject)}`);
     processPDFDataIntoBD(pdfObject)
         .then(console.log)
         .catch(console.warn);
@@ -62,19 +62,20 @@ const obtenerId = (campo, valor, tabla) => {
     });
 };
 
-const mySQLInsert = (insertQuery) => {
+const mySQLInsert = (table, fields, values) => {
     return new Promise((resolve, reject) => {
         pool.getConnection((error, connection) => {
             if (error){
-                reject(`No se pudo realizasr el insert: ${error}`);
+                reject(`No se pudo realizar el insert: ${error}`);
             }
             else {
                 console.log(`Conexion correcta, realizando insert `)
+                const insertQuery = `INSERT INTO ${table} (${fields}) VALUES (${values})`;
                 connection.query(insertQuery, (err, result)=>{
                     if (err){
                         reject(err);
                     } else {
-                        resolve(`Insercion correcta: ${result}`);
+                        resolve(`Insercion correcta: ${JSON.stringify(result)}`);
                     }
                 });
             }
@@ -83,13 +84,16 @@ const mySQLInsert = (insertQuery) => {
 }
 
 const processPDFDataIntoBD = async (pdfObject) => {
-    try {
-        const tipoJuicioId = await obtenerId('nombre', pdfObject.datosGenerales.tipoJuicio, 'tipo_juicios')
-        console.log(`tipoJuicioId: ${tipoJuicioId}`);
+    let insertFields;
+    let insertValues;
 
-        let expedienteQuery = `INSERT INTO expedientes (numero_expediente, folio, juez, actor, demandado, secretario, juicio_id, estado, created_at, updated_at) 
-            VALUES ('${pdfObject.datosGenerales.numeroExpediente}', '${pdfObject.datosGenerales.folio}', '${pdfObject.datosGenerales.juez}', '${pdfObject.datosGenerales.parteActora}', '${pdfObject.datosGenerales.parteDemandada}', '${pdfObject.datosGenerales.secretario}', '${tipoJuicioId}', '1', NOW(), NOW())`;
-        const insercionExpediente = await mySQLInsert(expedienteQuery);
+    try {
+
+        // Insert into expedientes
+        const tipoJuicioId = await obtenerId('nombre', pdfObject.datosGenerales.tipoJuicio, 'tipo_juicios')
+        insertFields = `numero_expediente, folio, juez, actor, demandado, secretario, juicio_id, estado, created_at, updated_at`;
+        insertValues = `'${pdfObject.datosGenerales.numeroExpediente}', '${pdfObject.datosGenerales.folio}', '${pdfObject.datosGenerales.juez}', '${pdfObject.datosGenerales.parteActora}', '${pdfObject.datosGenerales.parteDemandada}', '${pdfObject.datosGenerales.secretario}', '${tipoJuicioId}', '1', NOW(), NOW()`
+        const insercionExpediente = await mySQLInsert(`expedientes`, insertFields, insertValues);
         console.log(insercionExpediente);
 
         return `PDF procesado a base de datos de forma exitosa`;

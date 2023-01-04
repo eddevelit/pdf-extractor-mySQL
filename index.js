@@ -1,5 +1,5 @@
 const PdfExtractor = require("pdf-extractor").PdfExtractor;
-let pool = require("./mysqlUtil");
+let pool = require("./utils/mysqlUtil");
 let convertPDFToObject = require("./utils/pdfToObject.js");
 
 let outputDir = "./",

@@ -20,8 +20,8 @@ pdfExtractor
   .parse("test.pdf")
   .then(function () {
     console.log("# End of Document");
-    const fs = require("fs");
-    const path = require("path");
+    const fs = require('fs');
+    const path = require('path');
     const body = fs
       .readFileSync(path.resolve(__dirname, "./", "text-1.html"))
       .toString();
@@ -33,9 +33,9 @@ pdfExtractor
     // console.log(`filteredElements: ${filteredElements}`);
     const pdfObject = convertPDFToObject(filteredElements);
     console.log(`object: ${JSON.stringify(pdfObject)}`);
-
-    processPDFDataIntoBD(pdfObject);
-
+    processPDFDataIntoBD(pdfObject)
+        .then(console.log)
+        .catch(console.warn);
   })
   .catch(function (err) {
     console.error("Error: " + err);
@@ -43,73 +43,58 @@ pdfExtractor
 
 
 const obtenerId = (campo, valor, tabla) => {
-  pool.getConnection(function (error, connection) {
-    if (error) {
-      throw error;
-    } else {
-      console.log("Conexion correcta.");
-
-      return new Promise((resolve, reject) => {
-        connection.query(
-          `SELECT id FROM ${tabla} WHERE ${campo} = '${valor}'`,
-          (err, result) => {
-            if (err) {
-              return reject(err);
+    return new Promise((resolve, reject) => {
+        pool.getConnection((error, connection) => {
+            if (error){
+                reject(`No se pudo encontrar el id de ${tabla}: ${error}`);
             }
-            console.log(`Id de ${tabla}: ${result[0].id}`);
-            return resolve(result[0].id);
-          }
-        );
-      });
-    }
-  });
+            else {
+                console.log(`Conexion correcta, buscando id de tabla: ${tabla} con los datos => campo: ${campo} valor: ${valor} `)
+                connection.query(`SELECT id FROM ${tabla} WHERE ${campo} = '${valor}'`, (err, result) => {
+                   if (err) {
+                       reject(`No se pudo encontrar el id de ${tabla}: ${err}`);
+                   } else {
+                       resolve(result[0].id);
+                   }
+                });
+            }
+        });
+    });
 };
 
-async function processPDFDataIntoBD(pdfObject) {
-   
+const mySQLInsert = (insertQuery) => {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((error, connection) => {
+            if (error){
+                reject(`No se pudo realizasr el insert: ${error}`);
+            }
+            else {
+                console.log(`Conexion correcta, realizando insert `)
+                connection.query(insertQuery, (err, result)=>{
+                    if (err){
+                        reject(err);
+                    } else {
+                        resolve(`Insercion correcta: ${result}`);
+                    }
+                });
+            }
+        });
+    });
 }
 
+const processPDFDataIntoBD = async (pdfObject) => {
+    try {
+        const tipoJuicioId = await obtenerId('nombre', pdfObject.datosGenerales.tipoJuicio, 'tipo_juicios')
+        console.log(`tipoJuicioId: ${tipoJuicioId}`);
 
-// async processPDFDataIntoBD(pdfObject) => {
-//   obtenerId("nombre", pdfObject.datosGenerales.tipoJuicio, "tipo_juicios").then(
-//     (id) => {
-//       console.log(`id: ${id}`);
-//     }
-//   );
-// }
+        let expedienteQuery = `INSERT INTO expedientes (numero_expediente, folio, juez, actor, demandado, secretario, juicio_id, estado, created_at, updated_at) 
+            VALUES ('${pdfObject.datosGenerales.numeroExpediente}', '${pdfObject.datosGenerales.folio}', '${pdfObject.datosGenerales.juez}', '${pdfObject.datosGenerales.parteActora}', '${pdfObject.datosGenerales.parteDemandada}', '${pdfObject.datosGenerales.secretario}', '${tipoJuicioId}', '1', NOW(), NOW())`;
+        const insercionExpediente = await mySQLInsert(expedienteQuery);
+        console.log(insercionExpediente);
 
-// Raw insert
-// pool.getConnection(function (error, connection) {
-//    if (error) {
-//      throw error;
-//    } else {
-//      console.log("Conexion correcta.");
+        return `PDF procesado a base de datos de forma exitosa`;
 
-//      let tipoJuiciosId;
-
-//      // Getting tipoJuiciosId
-//      let tipoJuicioQuery = `SELECT id FROM tipo_juicios WHERE nombre = '${pdfObject.datosGenerales.tipoJuicio}'`;
-//      connection.query(tipoJuicioQuery, function (err, result) {
-//        if (result.length > 0) {
-//          console.log(`${result[0].id}`);
-//          tipoJuiciosId = result[0].id;
-//          // Inserting into expedientes
-//          let expedienteQuery = `INSERT INTO expedientes (numero_expediente, folio, juez, juzgado, actor, demandado, secretario, juicio_id, estado, created_at, updated_at) 
-//             VALUES ('${pdfObject.datosGenerales.numeroExpediente}', '${pdfObject.datosGenerales.folio}', '${pdfObject.datosGenerales.juez}', '${pdfObject.sala}', '${pdfObject.datosGenerales.parteActora}', '${pdfObject.datosGenerales.parteDemandada}', '${pdfObject.datosGenerales.secretario}', '${tipoJuiciosId}', '1', NOW(), NOW())`;
-//          connection.query(expedienteQuery, function (err, result) {
-//            if (err) {
-//              throw new Error(`Error al insertar en expedientes: ${err}`);
-//            } else {
-//              console.log(
-//                `Expediente insertado correctamente: ${JSON.stringify(
-//                  result
-//                )}`
-//              );
-//            }
-//          });
-//        } else {
-//          throw new Error(`Id no encontrado: ${err}`);
-//        }
-//      });
-//    }
-//  });
+    } catch (e) {
+        throw e;
+    }
+}

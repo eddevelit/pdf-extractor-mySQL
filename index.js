@@ -110,7 +110,6 @@ const processPDFDataIntoBD = async (pdfObject) => {
 
     let insertFields;
     let insertValues;
-    let personal = [];
 
     try {
 
@@ -155,50 +154,38 @@ const processPDFDataIntoBD = async (pdfObject) => {
 
         // Inserting personal
 
+        insertFields = `nombre, rol_personal_id, audiencia_id, created_at, updated_at`;
+        let insercionPersonal;
+
         const [audiencia] = await mysqlSelect(`audiencias`, `id`, ``, `order by id desc limit 1`);
         console.log(`AudienciaId: ${JSON.stringify(audiencia.id)}`);
 
         const juezRoleId = await obtenerId('tipo_personal', 'Juez', 'roles_personals');
-        const juez = {
-            name: pdfObject.datosGenerales.juez,
-            role: juezRoleId
-        }
-        personal.push(juez);
+        insertValues = `'${pdfObject.datosGenerales.juez}', '${juezRoleId}', '${audiencia.id}', NOW(), NOW()`
+        insercionPersonal = await mySQLInsert(`personal_audiencias`, insertFields, insertValues);
+        console.log(insercionPersonal);
 
         const secretarioRoleId = await obtenerId('tipo_personal', 'Secretario', 'roles_personals');
-        const secretario = {
-            name: pdfObject.datosGenerales.secretario,
-            role: secretarioRoleId
-        }
-        personal.push(secretario);
+        insertValues = `'${pdfObject.datosGenerales.secretario}', '${secretarioRoleId}', '${audiencia.id}', NOW(), NOW()`
+        insercionPersonal = await mySQLInsert(`personal_audiencias`, insertFields, insertValues);
+        console.log(insercionPersonal);
 
         const testigoRoleId = await obtenerId('tipo_personal', 'Testigo', 'roles_personals');
-        const testigo = {
-            name: pdfObject.datosGenerales.testigo,
-            role: testigoRoleId
-        }
-        personal.push(testigo);
+        insertValues = `'${pdfObject.datosGenerales.testigo}', '${testigoRoleId}', '${audiencia.id}', NOW(), NOW()`
+        insercionPersonal = await mySQLInsert(`personal_audiencias`, insertFields, insertValues);
+        console.log(insercionPersonal);
 
         const parteActoraRoleId = await obtenerId('tipo_personal', 'Parte Actora', 'roles_personals');
-        const parteActora = {
-            name: pdfObject.datosGenerales.parteActora,
-            role: parteActoraRoleId
-        }
-        personal.push(parteActora);
+        insertValues = `'${pdfObject.datosGenerales.parteActora}', '${parteActoraRoleId}', '${audiencia.id}', NOW(), NOW()`
+        insercionPersonal = await mySQLInsert(`personal_audiencias`, insertFields, insertValues);
+        console.log(insercionPersonal);
 
         const parteDemandadaRoleId = await obtenerId('tipo_personal', 'Parte Demandada', 'roles_personals');
-        const parteDemandada = {
-            name: pdfObject.datosGenerales.parteDemandada,
-            role: parteDemandadaRoleId
-        }
-        personal.push(parteDemandada);
+        insertValues = `'${pdfObject.datosGenerales.parteDemandada}', '${parteDemandadaRoleId}', '${audiencia.id}', NOW(), NOW()`
+        insercionPersonal = await mySQLInsert(`personal_audiencias`, insertFields, insertValues);
+        console.log(insercionPersonal);
 
-        personal.map(async (p) => {
-            insertFields = `nombre, rol_personal_id, audiencia_id, created_at, updated_at`;
-            insertValues = `'${p.name}', '${p.role}', '${audiencia.id}', NOW(), NOW()`
-            const insercionPersonal = await mySQLInsert(`personal_audiencias`, insertFields, insertValues);
-            console.log(insercionPersonal);
-        });
+        await pool.end()
 
         return `PDF procesado a base de datos de forma exitosa :)`;
 

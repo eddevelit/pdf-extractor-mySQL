@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "colors": "^1.4.0",
     "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
     "pdf-extract": "^1.0.11",

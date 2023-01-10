@@ -1,14 +1,14 @@
 const PdfExtractor = require("pdf-extractor").PdfExtractor;
-const {processPDFDataIntoBD, pool} = require("./utils/mysqlUtil");
+const {processPDFDataIntoBD} = require("./utils/mysqlUtil");
 const convertPDFToObject = require("./utils/pdfToObject.js");
 const fs = require('fs');
 const path = require('path');
-
-const directoryPath = path.join('C:', 'Rotoplas', 'Argumentalia', 'PDFs de Audiencias');
+require ('colors');
+const directoryPath = path.join('F:', 'Personal', 'Documents', 'Onikom','Argumentalia', 'MuestrasPDFfds');
 fs.readdir(directoryPath, (err, files) => {
 
     if (err) {
-        return console.log('Unable to scan directory: ' + err);
+        return console.log(`No se encontró el directorio: ${directoryPath} `.red + err);
     }
 
     let outputDir = "./",

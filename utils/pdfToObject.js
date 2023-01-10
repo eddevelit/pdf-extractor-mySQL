@@ -1,3 +1,39 @@
+// const fs = require("fs");
+
+const getParticipantsFromHTML = (body) => {
+
+    const parteDemandadaIndex = body.indexOf('Parte Demandada');
+    const centroDeJusticiaIndex = body.lastIndexOf('Centro de justicia</');
+    let personalSection = body.substring(parteDemandadaIndex + 22, centroDeJusticiaIndex);
+    console.log(personalSection.bgCyan);
+
+    // Removing br tags
+    personalSection = personalSection.replace(/(<br role="presentation">)/gi, "\n");
+
+    console.log(personalSection.bgCyan);
+
+    console.log(`emptySpan?: ${personalSection.includes('> </span>')}`.yellow);
+
+    // Removing empty span tags
+    while (personalSection.includes('> </span>')){
+
+        console.log('entro');
+
+        let emptySpanSection = personalSection.substring(0, personalSection.indexOf('> </span>') + 9);
+        // fs.writeFileSync(`emptySection.txt`, emptySpanSection);
+        console.log(emptySpanSection.bgGreen);
+        let begginingSpanIndex = emptySpanSection.lastIndexOf('<span');
+        console.log(`begginingSpanIndex: ${begginingSpanIndex}`.cyan);
+
+        let endSpanIndex = emptySpanSection.length;
+        console.log(begginingSpanIndex);
+        console.log(endSpanIndex);
+
+
+        personalSection = personalSection.slice(0, begginingSpanIndex) + personalSection.slice(endSpanIndex, personalSection.length);
+        console.log(personalSection.bgBlue);
+    }
+};
 const convertPDFToObject = (pdfElementsArray) => {
     const titulo = pdfElementsArray[0];
     const centroDeJusticia = pdfElementsArray[2].replace(":", "").trim();
@@ -68,4 +104,4 @@ const convertPDFToObject = (pdfElementsArray) => {
     return pdfObject;
 };
 
-module.exports = convertPDFToObject;
+module.exports = {getParticipantsFromHTML, convertPDFToObject};

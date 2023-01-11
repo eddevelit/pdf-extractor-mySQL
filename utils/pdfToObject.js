@@ -65,10 +65,11 @@ const getParticipantsFromHTML = (body) => {
         return completedPersonal;
 };
 
-const convertPDFToObject = (body) => {
+const convertPDFToObject = (body, pdfName) => {
+
+    console.log(`Tranformando archivo: ${pdfName} `.cyan);
 
     const personal = getParticipantsFromHTML(body);
-    console.log(`htmlWithParticipants: ${personal}`.bgBlue);
     const x = body.replace(/(<([^>]+)>)/gi, "\n");
     const pdfElements = x.split("\n");
     // console.table(pdfElements);
@@ -145,7 +146,7 @@ const convertPDFToObject = (body) => {
 
     console.log(`PDF Object: ${JSON.stringify(pdfObject)}`.bgCyan);
 
-    fs.writeFileSync(`./archivosPrueba/pdfObject.txt`, JSON.stringify(pdfObject));
+    fs.writeFileSync(`./archivosPrueba/pdfObject-${pdfObject.datosGenerales.folio}.txt`, JSON.stringify(pdfObject));
 
     return pdfObject;
 };

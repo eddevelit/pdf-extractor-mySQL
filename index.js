@@ -32,7 +32,7 @@ fs.readdir(directoryPath, (err, files) => {
             console.log(`Procesando archivo: ${filePath} `.bgCyan);
             await pdfExtractor.parse(filePath);
             const body = fs.readFileSync(path.resolve(__dirname, "./", "text-1.html")).toString();
-            const pdfObject = convertPDFToObject(body);
+            const pdfObject = convertPDFToObject(body, filePath);
             // const processPDFResult = await processPDFDataIntoBD(pdfObject);
             // console.log(processPDFResult);
         } catch (error) {

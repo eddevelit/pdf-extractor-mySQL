@@ -15,7 +15,7 @@ const getParticipantsFromHTML = (body) => {
     // console.log(`emptySpan?: ${personalSection.includes('> </span>')}`.yellow);
 
     // Removing empty span tags
-    while (personalSection.includes('> </span>')){
+    while (personalSection.includes('> </span>')) {
 
         let emptySpanSection = personalSection.substring(0, personalSection.indexOf('> </span>') + 9);
         // fs.writeFileSync(`emptySection.txt`, emptySpanSection);
@@ -32,39 +32,31 @@ const getParticipantsFromHTML = (body) => {
 
     // fs.writeFileSync(`personalSection.txt`, personalSection);
 
-    let personalArray = personalSection.split("\n");
-    personalArray.pop();
+    let personalArray = personalSection.split("</span>");
+    // personalArray.pop();
+    // console.table(personalArray);
 
-    for (let i = 0; i < personalArray.length -1;) {
+    for (let i = 0; i < personalArray.length - 1; i++) {
 
+        let personal = personalArray[i].substring(personalArray[i].indexOf('>') + 1, personalArray[i].length);
 
-        let thisPersonalLeftProperty = parseFloat(personalArray[i].substring(personalArray[i].indexOf('left:') + 6, personalArray[i].indexOf('px')));
-        let nextPersonalLeftProperty = parseFloat(personalArray[i + 1].substring(personalArray[i + 1].indexOf('left:') + 6, personalArray[i + 1].indexOf('px')));
-        console.log(`leftProperty: ${thisPersonalLeftProperty}`.yellow);
-        console.log(`nextLeftProperty: ${nextPersonalLeftProperty}`.red);
+        while ((parseFloat(personalArray[i + 1].substring(personalArray[i + 1].indexOf('left:') + 6, personalArray[i + 1].indexOf('px'))) -
+            parseFloat(personalArray[i].substring(personalArray[i].indexOf('left:') + 6, personalArray[i].indexOf('px')))
+            < 130)) {
 
-        let currentPersonal = personalArray[i].substring(personalArray[i].indexOf('>') + 1, personalArray[i].indexOf('</span>'));
+            let nextPersonal = personalArray[i + 1].substring(personalArray[i + 1].indexOf('>') + 1, personalArray[i + 1].length);
+            // console.log(`currentPersonal: ${currentPersonal}`.blue);
+            // console.log(`nextPersonal: ${nextPersonal}`.blue);
 
-        let personal = currentPersonal;
-
-            while ((parseFloat(personalArray[i + 1].substring(personalArray[i + 1].indexOf('left:') + 6, personalArray[i + 1].indexOf('px'))) -
-                parseFloat(personalArray[i].substring(personalArray[i].indexOf('left:') + 6, personalArray[i].indexOf('px')))
-                < 130)) {
-
-                let nextPersonal = personalArray[i + 1].substring(personalArray[i + 1].indexOf('>') + 1, personalArray[i + 1].indexOf('</span>'));
-                console.log(`currentPersonal: ${currentPersonal}`.blue);
-                console.log(`nextPersonal: ${nextPersonal}`.blue);
-
-                personal =  personal + " " + nextPersonal;
-                i++;
-                if (i === personalArray.length -1){
-                    break;
-                }
-            }
-
-            console.log(`personal: ${personal}`.bgGreen);
-
+            personal = personal + " " + nextPersonal;
             i++;
+            if (i === personalArray.length - 1) {
+                break;
+            }
+        }
+
+        console.log(`personal: ${personal}`.bgGreen);
+
     }
 };
 

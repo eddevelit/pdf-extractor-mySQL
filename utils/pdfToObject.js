@@ -5,35 +5,69 @@ const getParticipantsFromHTML = (body) => {
     const parteDemandadaIndex = body.indexOf('Parte Demandada');
     const centroDeJusticiaIndex = body.lastIndexOf('Centro de justicia</');
     let personalSection = body.substring(parteDemandadaIndex + 22, centroDeJusticiaIndex);
-    console.log(personalSection.bgCyan);
+    // console.log(personalSection.bgCyan);
 
     // Removing br tags
     personalSection = personalSection.replace(/(<br role="presentation">)/gi, "\n");
+    // console.log(`Removing br tags`.blue);
+    // console.log(personalSection.bgCyan);
 
-    console.log(personalSection.bgCyan);
-
-    console.log(`emptySpan?: ${personalSection.includes('> </span>')}`.yellow);
+    // console.log(`emptySpan?: ${personalSection.includes('> </span>')}`.yellow);
 
     // Removing empty span tags
     while (personalSection.includes('> </span>')){
 
-        console.log('entro');
-
         let emptySpanSection = personalSection.substring(0, personalSection.indexOf('> </span>') + 9);
         // fs.writeFileSync(`emptySection.txt`, emptySpanSection);
+        console.log(`emptySpanSection`.blue);
         console.log(emptySpanSection.bgGreen);
-        let begginingSpanIndex = emptySpanSection.lastIndexOf('<span');
-        console.log(`begginingSpanIndex: ${begginingSpanIndex}`.cyan);
 
-        let endSpanIndex = emptySpanSection.length;
-        console.log(begginingSpanIndex);
-        console.log(endSpanIndex);
-
-
-        personalSection = personalSection.slice(0, begginingSpanIndex) + personalSection.slice(endSpanIndex, personalSection.length);
+        personalSection = personalSection.slice(0, emptySpanSection.lastIndexOf('<span')) + personalSection.slice(emptySpanSection.length, personalSection.length);
+        console.log(`personalSection`.blue);
         console.log(personalSection.bgBlue);
     }
+
+//     Ordening personal
+    personalSection = personalSection.trim();
+
+    // fs.writeFileSync(`personalSection.txt`, personalSection);
+
+    let personalArray = personalSection.split("\n");
+    personalArray.pop();
+
+    for (let i = 0; i < personalArray.length -1;) {
+
+
+        let thisPersonalLeftProperty = parseFloat(personalArray[i].substring(personalArray[i].indexOf('left:') + 6, personalArray[i].indexOf('px')));
+        let nextPersonalLeftProperty = parseFloat(personalArray[i + 1].substring(personalArray[i + 1].indexOf('left:') + 6, personalArray[i + 1].indexOf('px')));
+        console.log(`leftProperty: ${thisPersonalLeftProperty}`.yellow);
+        console.log(`nextLeftProperty: ${nextPersonalLeftProperty}`.red);
+
+        let currentPersonal = personalArray[i].substring(personalArray[i].indexOf('>') + 1, personalArray[i].indexOf('</span>'));
+
+        let personal = currentPersonal;
+
+            while ((parseFloat(personalArray[i + 1].substring(personalArray[i + 1].indexOf('left:') + 6, personalArray[i + 1].indexOf('px'))) -
+                parseFloat(personalArray[i].substring(personalArray[i].indexOf('left:') + 6, personalArray[i].indexOf('px')))
+                < 130)) {
+
+                let nextPersonal = personalArray[i + 1].substring(personalArray[i + 1].indexOf('>') + 1, personalArray[i + 1].indexOf('</span>'));
+                console.log(`currentPersonal: ${currentPersonal}`.blue);
+                console.log(`nextPersonal: ${nextPersonal}`.blue);
+
+                personal =  personal + " " + nextPersonal;
+                i++;
+                if (i === personalArray.length -1){
+                    break;
+                }
+            }
+
+            console.log(`personal: ${personal}`.bgGreen);
+
+            i++;
+    }
 };
+
 const convertPDFToObject = (pdfElementsArray) => {
     const titulo = pdfElementsArray[0];
     const centroDeJusticia = pdfElementsArray[2].replace(":", "").trim();

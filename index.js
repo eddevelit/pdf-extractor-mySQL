@@ -1,10 +1,10 @@
 const PdfExtractor = require("pdf-extractor").PdfExtractor;
-const {processPDFDataIntoBD} = require("./utils/mysqlUtil");
-const convertPDFToObject = require("./utils/pdfToObject.js");
+// const {processPDFDataIntoBD} = require("./utils/mysqlUtil");
+const {convertPDFToObject} = require("./utils/pdfToObject.js");
 const fs = require('fs');
 const path = require('path');
 require ('colors');
-const directoryPath = path.join('F:', 'Personal', 'Documents', 'Onikom','Argumentalia', 'MuestrasPDFfds');
+const directoryPath = path.join('F:', 'Personal', 'Documents', 'Onikom','Argumentalia', 'MuestrasPDF');
 fs.readdir(directoryPath, (err, files) => {
 
     if (err) {
@@ -29,17 +29,12 @@ fs.readdir(directoryPath, (err, files) => {
     files.forEach(async file => {
         try {
             let filePath = path.join(directoryPath, file);
+            console.log(`Procesando archivo: ${filePath} `.bgCyan);
             await pdfExtractor.parse(filePath);
-            console.log("# End of Document");
             const body = fs.readFileSync(path.resolve(__dirname, "./", "text-1.html")).toString();
-            const x = body.replace(/(<([^>]+)>)/gi, "\n");
-            const pdfElements = x.split("\n");
-            const filteredElements = pdfElements.filter((element) => {
-                return element !== "" && element !== " ";
-            });
-            const pdfObject = convertPDFToObject(filteredElements);
-            const processPDFResult = await processPDFDataIntoBD(pdfObject);
-            console.log(processPDFResult);
+            const pdfObject = convertPDFToObject(body);
+            // const processPDFResult = await processPDFDataIntoBD(pdfObject);
+            // console.log(processPDFResult);
         } catch (error) {
             console.log(error);
         }

@@ -1,7 +1,7 @@
-// const fs = require("fs");
+const fs = require("fs");
 
-const getParticipantsFromHTML = async (body) => {
-    try {
+const getParticipantsFromHTML = (body) => {
+
         const parteDemandadaIndex = body.indexOf('Parte Demandada');
         const centroDeJusticiaIndex = body.lastIndexOf('Centro de justicia</');
         let personalSection = body.substring(parteDemandadaIndex + 22, centroDeJusticiaIndex);
@@ -17,12 +17,12 @@ const getParticipantsFromHTML = async (body) => {
 
             let emptySpanSection = personalSection.substring(0, personalSection.indexOf('> </span>') + 9);
             // fs.writeFileSync(`emptySection.txt`, emptySpanSection);
-            console.log(`emptySpanSection`.blue);
-            console.log(emptySpanSection.bgGreen);
+            // console.log(`emptySpanSection`.blue);
+            // console.log(emptySpanSection.bgGreen);
 
             personalSection = personalSection.slice(0, emptySpanSection.lastIndexOf('<span')) + personalSection.slice(emptySpanSection.length, personalSection.length);
-            console.log(`personalSection`.blue);
-            console.log(personalSection.bgBlue);
+            // console.log(`personalSection`.blue);
+            // console.log(personalSection.bgBlue);
         }
 
 //     Ordening personal
@@ -61,53 +61,62 @@ const getParticipantsFromHTML = async (body) => {
 
         }
 
-        console.log(`completedPersonal: ${completedPersonal}`.bgBlue);
+        // console.log(`completedPersonal: ${completedPersonal}`.bgBlue);
         return completedPersonal;
-    } catch (e) {
-        throw new Error(e);
-    }
-
 };
 
-const convertPDFToObject = (pdfElementsArray) => {
-    const titulo = pdfElementsArray[0];
-    const centroDeJusticia = pdfElementsArray[2].replace(":", "").trim();
-    const sala = pdfElementsArray[4].replace(":", "").trim();
-    const agendada = pdfElementsArray[6].replace(":", "").trim();
-    const numeroExpediente = pdfElementsArray[10];
-    const folio = pdfElementsArray[11];
-    const juez = pdfElementsArray[17];
-    const secretario = pdfElementsArray[18];
-    const testigo = pdfElementsArray[19];
-    const parteActora = pdfElementsArray[20];
-    const parteDemandada = pdfElementsArray[21];
-    const centroJusticia = pdfElementsArray[26];
-    const tipoAudicencia = pdfElementsArray[28];
-    const tipoJuicio = pdfElementsArray[29];
-    const fechaCelebracion = pdfElementsArray[33];
-    const horaInicio = pdfElementsArray[34];
-    const horaAFinalizar = pdfElementsArray[35];
+const convertPDFToObject = (body) => {
+
+    const personal = getParticipantsFromHTML(body);
+    console.log(`htmlWithParticipants: ${personal}`.bgBlue);
+    const x = body.replace(/(<([^>]+)>)/gi, "\n");
+    const pdfElements = x.split("\n");
+    // console.table(pdfElements);
+    const filteredElements = pdfElements.filter((element) => {
+        return element !== "" && element !== " ";
+    });
+    // console.table(filteredElements);
+
+    const titulo = filteredElements[0];
+    const centroDeJusticia = filteredElements[2].replace(":", "").trim();
+    const sala = filteredElements[4].replace(":", "").trim();
+    const agendada = filteredElements[6].replace(":", "").trim();
+    const numeroExpediente = filteredElements[10];
+    const folio = filteredElements[11];
+    const juez = personal[0];
+    const secretario = personal[1];
+    // const testigo = filteredElements[19];
+    const parteActora = personal[2];
+    const parteDemandada = personal[3];
+    const tipoDeJuicioIndex = filteredElements.indexOf('Tipo de Juicio');
+    const centroJusticia = filteredElements[tipoDeJuicioIndex + 1];
+    const tipoAudicencia = filteredElements[tipoDeJuicioIndex + 3];
+    const tipoJuicio = filteredElements[tipoDeJuicioIndex + 4];
+    const horaFinalizarIndex = filteredElements.indexOf('Hora a Finalizar');
+    const fechaCelebracion = filteredElements[horaFinalizarIndex + 1];
+    const horaInicio = filteredElements[horaFinalizarIndex + 2];
+    const horaAFinalizar = filteredElements[horaFinalizarIndex + 3];
 
     // Getting participants
     const participantes = [];
-    const participanteInicial = pdfElementsArray.indexOf(
+    const participanteInicial = filteredElements.indexOf(
         "Lista de participantes"
     );
-    const tokenIndex = pdfElementsArray.indexOf("Token de acceso");
+    const tokenIndex = filteredElements.indexOf("Token de acceso");
     for (let i = participanteInicial + 1; i < tokenIndex; i++) {
         participante = {
             nombre: "",
             rol: "",
         };
-        if (pdfElementsArray[i] === "Rol") {
-            participante.nombre = pdfElementsArray[i + 1];
-            participante.rol = pdfElementsArray[i + 2];
+        if (filteredElements[i] === "Rol") {
+            participante.nombre = filteredElements[i + 1];
+            participante.rol = filteredElements[i + 2];
             participantes.push(participante);
         }
     }
 
-    const tokenAcceso = pdfElementsArray[tokenIndex + 1];
-    const tokenInvitado = pdfElementsArray[tokenIndex + 3];
+    const tokenAcceso = filteredElements[tokenIndex + 1];
+    const tokenInvitado = filteredElements[tokenIndex + 3];
 
     const pdfObject = {
         titulo: titulo,
@@ -119,7 +128,7 @@ const convertPDFToObject = (pdfElementsArray) => {
             folio: folio,
             juez: juez,
             secretario: secretario,
-            testigo: testigo,
+            // testigo: testigo,
             parteActora: parteActora,
             parteDemandada: parteDemandada,
             centroJusticia: centroJusticia,
@@ -134,7 +143,9 @@ const convertPDFToObject = (pdfElementsArray) => {
         tokenInvitado: tokenInvitado
     }
 
-    console.log(`PDF Object: ${JSON.stringify(pdfObject)}`);
+    console.log(`PDF Object: ${JSON.stringify(pdfObject)}`.bgCyan);
+
+    fs.writeFileSync(`./archivosPrueba/pdfObject.txt`, JSON.stringify(pdfObject));
 
     return pdfObject;
 };

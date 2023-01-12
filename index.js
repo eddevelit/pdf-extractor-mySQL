@@ -15,8 +15,6 @@ fs.readdir(directoryPath, async (err, files) => {
         const filePath = path.join(directoryPath, files[i]);
         await extractPDFData(filePath);
         const pdfObject = await convertPDFToObject(filePath);
-        console.log(pdfObject.bgGreen);
-
     }
 });
 

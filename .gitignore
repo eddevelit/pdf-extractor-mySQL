@@ -1,4 +1,8 @@
 node_modules/
-.idea/
-archivosPrueba/
+/.idea/
+/archivosPrueba/*.json
+/archivosPrueba/*.txt
+/archivosPrueba/*.html
+/archivosPrueba/*.png
+/archivosPrueba/*.css
 

@@ -151,11 +151,13 @@ const convertPDFToObject = async (pdfName) => {
 
         console.log(`PDF Object: ${JSON.stringify(pdfObject)}`.bgCyan);
 
+        console.log(`PDF transformado de manera exitosa`.green);
+
         // const fileName = /[^\\]*$/.exec(pdfName)[0];
 
         // fs.writeFileSync(`./archivosPrueba/pdfObject-${fileName.replace(" ","")}.txt`, JSON.stringify(pdfObject));
 
-        return 'Everything is OK';
+        return 'pdfObject';
     } catch (error) {
         throw new Error(error);
     }

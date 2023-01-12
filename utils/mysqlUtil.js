@@ -1,5 +1,6 @@
 const util = require('util')
 const mysql = require('mysql')
+
 const pool = mysql.createPool({
     connectionLimit: 100,
     host: 'localhost',
@@ -9,7 +10,6 @@ const pool = mysql.createPool({
     port: 3306
 })
 
-// Ping database to check for common exception errors.
 pool.getConnection((err, connection) => {
     if (err) {
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
@@ -26,8 +26,6 @@ pool.getConnection((err, connection) => {
     if (connection) connection.release();
 })
 
-
-// Promisify for Node.js async/await.
 pool.query = util.promisify(pool.query)
 
 const obtenerId = async (campo, valor, tabla) => {
@@ -91,7 +89,6 @@ const processPDFDataIntoBD = async (pdfObject) => {
         console.log(insercionTokenAcceso.blue);
 
         // Inserting audiencias
-
         const salaId = await obtenerId('sala', pdfObject.sala, 'salas');
         const centroDeJusticiaId = await obtenerId('nombre', pdfObject.datosGenerales.centroJusticia, 'centro_justicias');
         // TODO Determine what audience status should be added
@@ -104,7 +101,6 @@ const processPDFDataIntoBD = async (pdfObject) => {
         console.log(insercionAudiencia.blue);
 
         // Inserting personal
-
         insertFields = `nombre, rol_personal_id, audiencia_id, created_at, updated_at`;
         let insercionPersonal;
         const audiencia = await mysqlSelect(`audiencias`, `id`, ``, `order by id desc limit 1`);
@@ -119,13 +115,6 @@ const processPDFDataIntoBD = async (pdfObject) => {
         insercionPersonal = await mySQLInsert(`personal_audiencias`, insertFields, insertValues);
         console.log(insercionPersonal.blue);
 
-        if (pdfObject.datosGenerales.testigo){
-            const testigoRoleId = await obtenerId('tipo_personal', 'Testigo', 'roles_personals');
-            insertValues = `'${pdfObject.datosGenerales.testigo}', '${testigoRoleId}', '${audiencia.id}', NOW(), NOW()`
-            insercionPersonal = await mySQLInsert(`personal_audiencias`, insertFields, insertValues);
-            console.log(insercionPersonal.blue);
-        }
-
         const parteActoraRoleId = await obtenerId('tipo_personal', 'Parte Actora', 'roles_personals');
         insertValues = `'${pdfObject.datosGenerales.parteActora}', '${parteActoraRoleId}', '${audiencia.id}', NOW(), NOW()`
         insercionPersonal = await mySQLInsert(`personal_audiencias`, insertFields, insertValues);
@@ -138,8 +127,8 @@ const processPDFDataIntoBD = async (pdfObject) => {
 
         return `PDF procesado a base de datos de forma exitosa :)`.green;
 
-    } catch (e) {
-        throw e;
+    } catch (error) {
+        throw error;
     }
 }
 

@@ -4,8 +4,9 @@ const {extractPDFData} = require("./utils/pdfExtractor.js");
 
 const fs = require('fs');
 const path = require('path');
-require ('colors');
-const directoryPath = path.join('F:', 'Personal', 'Documents', 'Onikom','Argumentalia', 'MuestrasPDF');
+require('colors');
+
+const directoryPath = path.join('F:', 'Personal', 'Documents', 'Onikom', 'Argumentalia', 'MuestrasPDF');
 fs.readdir(directoryPath, async (err, files) => {
 
     if (err) {

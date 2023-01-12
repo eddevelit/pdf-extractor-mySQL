@@ -3,67 +3,45 @@ const path = require("path");
 
 const getParticipantsFromHTML = (body) => {
 
-        const parteDemandadaIndex = body.indexOf('Parte Demandada');
-        const centroDeJusticiaIndex = body.lastIndexOf('Centro de justicia</');
-        let personalSection = body.substring(parteDemandadaIndex + 22, centroDeJusticiaIndex);
-        // console.log(personalSection.bgCyan);
+    const parteDemandadaIndex = body.indexOf('Parte Demandada');
+    const centroDeJusticiaIndex = body.lastIndexOf('Centro de justicia</');
+    let personalSection = body.substring(parteDemandadaIndex + 22, centroDeJusticiaIndex);
 
-        // Removing br tags
-        personalSection = personalSection.replace(/(<br role="presentation">)/gi, "\n");
-        // console.log(`Removing br tags`.blue);
-        // console.log(personalSection.bgCyan);
+    // Removing br tags
+    personalSection = personalSection.replace(/(<br role="presentation">)/gi, "\n");
 
-        // Removing empty span tags
-        while (personalSection.includes('> </span>')) {
+    // Removing empty span tags
+    while (personalSection.includes('> </span>')) {
 
-            let emptySpanSection = personalSection.substring(0, personalSection.indexOf('> </span>') + 9);
-            // fs.writeFileSync(`emptySection.txt`, emptySpanSection);
-            // console.log(`emptySpanSection`.blue);
-            // console.log(emptySpanSection.bgGreen);
-
-            personalSection = personalSection.slice(0, emptySpanSection.lastIndexOf('<span')) + personalSection.slice(emptySpanSection.length, personalSection.length);
-            // console.log(`personalSection`.blue);
-            // console.log(personalSection.bgBlue);
-        }
+        let emptySpanSection = personalSection.substring(0, personalSection.indexOf('> </span>') + 9);
+        personalSection = personalSection.slice(0, emptySpanSection.lastIndexOf('<span')) + personalSection.slice(emptySpanSection.length, personalSection.length);
+    }
 
 //     Ordening personal
-        personalSection = personalSection.trim();
+    personalSection = personalSection.trim();
+    let personalArray = personalSection.split("</span>");
+    let personal = [];
 
-        // fs.writeFileSync(`personalSection.txt`, personalSection);
+    for (let i = 0; i < personalArray.length - 1; i++) {
 
-        let personalArray = personalSection.split("</span>");
-        // personalArray.pop();
-        // console.table(personalArray);
+        let miembroPersonal = personalArray[i].substring(personalArray[i].indexOf('>') + 1, personalArray[i].length);
 
-        let completedPersonal = [];
+        while ((parseFloat(personalArray[i + 1].substring(personalArray[i + 1].indexOf('left:') + 6, personalArray[i + 1].indexOf('px'))) -
+            parseFloat(personalArray[i].substring(personalArray[i].indexOf('left:') + 6, personalArray[i].indexOf('px')))
+            < 130)) {
 
-        for (let i = 0; i < personalArray.length - 1; i++) {
+            let siguienteElemento = personalArray[i + 1].substring(personalArray[i + 1].indexOf('>') + 1, personalArray[i + 1].length);
+            miembroPersonal = miembroPersonal + " " + siguienteElemento;
+            i++;
 
-            let personal = personalArray[i].substring(personalArray[i].indexOf('>') + 1, personalArray[i].length);
-
-            while ((parseFloat(personalArray[i + 1].substring(personalArray[i + 1].indexOf('left:') + 6, personalArray[i + 1].indexOf('px'))) -
-                parseFloat(personalArray[i].substring(personalArray[i].indexOf('left:') + 6, personalArray[i].indexOf('px')))
-                < 130)) {
-
-                let nextPersonal = personalArray[i + 1].substring(personalArray[i + 1].indexOf('>') + 1, personalArray[i + 1].length);
-                // console.log(`currentPersonal: ${currentPersonal}`.blue);
-                // console.log(`nextPersonal: ${nextPersonal}`.blue);
-
-                personal = personal + " " + nextPersonal;
-
-                i++;
-                if (i === personalArray.length - 1) {
-                    break;
-                }
+            if (i === personalArray.length - 1) {
+                break;
             }
-
-            // console.log(`personal: ${personal}`.bgGreen);
-            completedPersonal.push(personal);
-
         }
+        personal.push(miembroPersonal.trim());
+    }
 
-        // console.log(`completedPersonal: ${completedPersonal}`.bgBlue);
-        return completedPersonal;
+    return personal;
 };
 
 const convertPDFToObject = async (pdfName) => {
@@ -72,16 +50,13 @@ const convertPDFToObject = async (pdfName) => {
         console.log(`Tranformando archivo: ${pdfName} `.cyan);
 
         const body = fs.readFileSync(path.resolve(__dirname, "../archivosPrueba", "text-1.html")).toString();
-
         const personal = getParticipantsFromHTML(body);
-
         const x = body.replace(/(<([^>]+)>)/gi, "\n");
         const pdfElements = x.split("\n");
-        // console.table(pdfElements);
+
         const filteredElements = pdfElements.filter((element) => {
             return element !== "" && element !== " ";
         });
-        // console.table(filteredElements);
 
         const titulo = filteredElements[0];
         const centroDeJusticia = filteredElements[2].replace(":", "").trim();
@@ -91,7 +66,6 @@ const convertPDFToObject = async (pdfName) => {
         const folio = filteredElements[11];
         const juez = personal[0];
         const secretario = personal[1];
-        // const testigo = filteredElements[19];
         const parteActora = personal[2];
         const parteDemandada = personal[3];
         const tipoDeJuicioIndex = filteredElements.indexOf('Tipo de Juicio');
@@ -134,7 +108,6 @@ const convertPDFToObject = async (pdfName) => {
                 folio: folio,
                 juez: juez,
                 secretario: secretario,
-                // testigo: testigo,
                 parteActora: parteActora,
                 parteDemandada: parteDemandada,
                 centroJusticia: centroJusticia,
@@ -152,10 +125,6 @@ const convertPDFToObject = async (pdfName) => {
         console.log(`PDF Object: ${JSON.stringify(pdfObject)}`.bgCyan);
 
         console.log(`PDF transformado de manera exitosa`.green);
-
-        // const fileName = /[^\\]*$/.exec(pdfName)[0];
-
-        // fs.writeFileSync(`./archivosPrueba/pdfObject-${fileName.replace(" ","")}.txt`, JSON.stringify(pdfObject));
 
         return pdfObject;
     } catch (error) {

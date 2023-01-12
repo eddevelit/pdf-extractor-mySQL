@@ -1,6 +1,7 @@
-const PdfExtractor = require("pdf-extractor").PdfExtractor;
-// const {processPDFDataIntoBD} = require("./utils/mysqlUtil");
+const {processPDFDataIntoBD, pool} = require("./utils/mysqlUtil");
 const {convertPDFToObject} = require("./utils/pdfToObject.js");
+const {extractPDFData} = require("./utils/pdfExtractor.js");
+
 const fs = require('fs');
 const path = require('path');
 require ('colors');
@@ -15,17 +16,11 @@ fs.readdir(directoryPath, async (err, files) => {
         const filePath = path.join(directoryPath, files[i]);
         await extractPDFData(filePath);
         const pdfObject = await convertPDFToObject(filePath);
+        const bdResult = await processPDFDataIntoBD(pdfObject);
+        console.log(bdResult);
     }
+    await pool.end();
 });
 
-async function extractPDFData(filePath) {
-    try {
-        let outputDir = "./archivosPrueba", pdfExtractor = new PdfExtractor(outputDir, {pageRange: [1, 5],});
-        await pdfExtractor.parse(filePath);
-        return `Elementos extraidos del archivo: ${filePath} `.bgGreen;
-    } catch (error) {
-        throw error;
-    }
-}
 
 

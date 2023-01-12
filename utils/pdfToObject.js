@@ -157,7 +157,7 @@ const convertPDFToObject = async (pdfName) => {
 
         // fs.writeFileSync(`./archivosPrueba/pdfObject-${fileName.replace(" ","")}.txt`, JSON.stringify(pdfObject));
 
-        return 'pdfObject';
+        return pdfObject;
     } catch (error) {
         throw new Error(error);
     }

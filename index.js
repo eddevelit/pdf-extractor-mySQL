@@ -5,40 +5,29 @@ const fs = require('fs');
 const path = require('path');
 require ('colors');
 const directoryPath = path.join('F:', 'Personal', 'Documents', 'Onikom','Argumentalia', 'MuestrasPDF');
-fs.readdir(directoryPath, (err, files) => {
+fs.readdir(directoryPath, async (err, files) => {
 
     if (err) {
         return console.log(`No se encontró el directorio: ${directoryPath} `.red + err);
     }
 
-    let outputDir = "./",
-        pdfExtractor = new PdfExtractor(
-            outputDir, {
-                viewportScale: (width, height) => {
-                    //dynamic zoom based on rendering a page to a fixed page size
-                    if (width > height) {
-                        //landscape: 1100px wide
-                        return 1100 / width;
-                    }
-                    //portrait: 800px wide
-                    return 800 / width;
-                },
-                pageRange: [1, 5],
-            });
+    for (let i = 0; i < files.length; i++) {
+        const filePath = path.join(directoryPath, files[i]);
+        await extractPDFData(filePath);
+        const pdfObject = await convertPDFToObject(filePath);
+        console.log(pdfObject.bgGreen);
 
-    files.forEach(async file => {
-        try {
-            let filePath = path.join(directoryPath, file);
-            console.log(`Procesando archivo: ${filePath} `.bgCyan);
-            await pdfExtractor.parse(filePath);
-            const body = fs.readFileSync(path.resolve(__dirname, "./", "text-1.html")).toString();
-            const pdfObject = convertPDFToObject(body, filePath);
-            // const processPDFResult = await processPDFDataIntoBD(pdfObject);
-            // console.log(processPDFResult);
-        } catch (error) {
-            console.log(error);
-        }
-    });
+    }
 });
+
+async function extractPDFData(filePath) {
+    try {
+        let outputDir = "./archivosPrueba", pdfExtractor = new PdfExtractor(outputDir, {pageRange: [1, 5],});
+        await pdfExtractor.parse(filePath);
+        return `Elementos extraidos del archivo: ${filePath} `.bgGreen;
+    } catch (error) {
+        throw error;
+    }
+}
 
 

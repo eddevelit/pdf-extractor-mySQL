@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 
 const getParticipantsFromHTML = (body) => {
 
@@ -56,7 +57,7 @@ const getParticipantsFromHTML = (body) => {
                 }
             }
 
-            console.log(`personal: ${personal}`.bgGreen);
+            // console.log(`personal: ${personal}`.bgGreen);
             completedPersonal.push(personal);
 
         }
@@ -65,90 +66,100 @@ const getParticipantsFromHTML = (body) => {
         return completedPersonal;
 };
 
-const convertPDFToObject = (body, pdfName) => {
+const convertPDFToObject = async (pdfName) => {
 
-    console.log(`Tranformando archivo: ${pdfName} `.cyan);
+    try {
+        console.log(`Tranformando archivo: ${pdfName} `.cyan);
 
-    const personal = getParticipantsFromHTML(body);
-    const x = body.replace(/(<([^>]+)>)/gi, "\n");
-    const pdfElements = x.split("\n");
-    // console.table(pdfElements);
-    const filteredElements = pdfElements.filter((element) => {
-        return element !== "" && element !== " ";
-    });
-    // console.table(filteredElements);
+        const body = fs.readFileSync(path.resolve(__dirname, "../archivosPrueba", "text-1.html")).toString();
 
-    const titulo = filteredElements[0];
-    const centroDeJusticia = filteredElements[2].replace(":", "").trim();
-    const sala = filteredElements[4].replace(":", "").trim();
-    const agendada = filteredElements[6].replace(":", "").trim();
-    const numeroExpediente = filteredElements[10];
-    const folio = filteredElements[11];
-    const juez = personal[0];
-    const secretario = personal[1];
-    // const testigo = filteredElements[19];
-    const parteActora = personal[2];
-    const parteDemandada = personal[3];
-    const tipoDeJuicioIndex = filteredElements.indexOf('Tipo de Juicio');
-    const centroJusticia = filteredElements[tipoDeJuicioIndex + 1];
-    const tipoAudicencia = filteredElements[tipoDeJuicioIndex + 3];
-    const tipoJuicio = filteredElements[tipoDeJuicioIndex + 4];
-    const horaFinalizarIndex = filteredElements.indexOf('Hora a Finalizar');
-    const fechaCelebracion = filteredElements[horaFinalizarIndex + 1];
-    const horaInicio = filteredElements[horaFinalizarIndex + 2];
-    const horaAFinalizar = filteredElements[horaFinalizarIndex + 3];
+        const personal = getParticipantsFromHTML(body);
 
-    // Getting participants
-    const participantes = [];
-    const participanteInicial = filteredElements.indexOf(
-        "Lista de participantes"
-    );
-    const tokenIndex = filteredElements.indexOf("Token de acceso");
-    for (let i = participanteInicial + 1; i < tokenIndex; i++) {
-        participante = {
-            nombre: "",
-            rol: "",
-        };
-        if (filteredElements[i] === "Rol") {
-            participante.nombre = filteredElements[i + 1];
-            participante.rol = filteredElements[i + 2];
-            participantes.push(participante);
+        const x = body.replace(/(<([^>]+)>)/gi, "\n");
+        const pdfElements = x.split("\n");
+        // console.table(pdfElements);
+        const filteredElements = pdfElements.filter((element) => {
+            return element !== "" && element !== " ";
+        });
+        // console.table(filteredElements);
+
+        const titulo = filteredElements[0];
+        const centroDeJusticia = filteredElements[2].replace(":", "").trim();
+        const sala = filteredElements[4].replace(":", "").trim();
+        const agendada = filteredElements[6].replace(":", "").trim();
+        const numeroExpediente = filteredElements[10];
+        const folio = filteredElements[11];
+        const juez = personal[0];
+        const secretario = personal[1];
+        // const testigo = filteredElements[19];
+        const parteActora = personal[2];
+        const parteDemandada = personal[3];
+        const tipoDeJuicioIndex = filteredElements.indexOf('Tipo de Juicio');
+        const centroJusticia = filteredElements[tipoDeJuicioIndex + 1];
+        const tipoAudicencia = filteredElements[tipoDeJuicioIndex + 3];
+        const tipoJuicio = filteredElements[tipoDeJuicioIndex + 4];
+        const horaFinalizarIndex = filteredElements.indexOf('Hora a Finalizar');
+        const fechaCelebracion = filteredElements[horaFinalizarIndex + 1];
+        const horaInicio = filteredElements[horaFinalizarIndex + 2];
+        const horaAFinalizar = filteredElements[horaFinalizarIndex + 3];
+
+        // Getting participants
+        const participantes = [];
+        const participanteInicial = filteredElements.indexOf(
+            "Lista de participantes"
+        );
+        const tokenIndex = filteredElements.indexOf("Token de acceso");
+        for (let i = participanteInicial + 1; i < tokenIndex; i++) {
+            participante = {
+                nombre: "",
+                rol: "",
+            };
+            if (filteredElements[i] === "Rol") {
+                participante.nombre = filteredElements[i + 1];
+                participante.rol = filteredElements[i + 2];
+                participantes.push(participante);
+            }
         }
+
+        const tokenAcceso = filteredElements[tokenIndex + 1];
+        const tokenInvitado = filteredElements[tokenIndex + 3];
+
+        const pdfObject = {
+            titulo: titulo,
+            centroDeJusticia: centroDeJusticia,
+            sala: sala,
+            agendada: agendada,
+            datosGenerales: {
+                numeroExpediente: numeroExpediente,
+                folio: folio,
+                juez: juez,
+                secretario: secretario,
+                // testigo: testigo,
+                parteActora: parteActora,
+                parteDemandada: parteDemandada,
+                centroJusticia: centroJusticia,
+                tipoAudicencia: tipoAudicencia,
+                tipoJuicio: tipoJuicio,
+                fechaCelebracion: fechaCelebracion,
+                horaInicio: horaInicio,
+                horaAFinalizar: horaAFinalizar,
+            },
+            participantes: participantes,
+            tokenAcceso: tokenAcceso,
+            tokenInvitado: tokenInvitado
+        }
+
+        console.log(`PDF Object: ${JSON.stringify(pdfObject)}`.bgCyan);
+
+        // const fileName = /[^\\]*$/.exec(pdfName)[0];
+
+        // fs.writeFileSync(`./archivosPrueba/pdfObject-${fileName.replace(" ","")}.txt`, JSON.stringify(pdfObject));
+
+        return 'Everything is OK';
+    } catch (error) {
+        throw new Error(error);
     }
 
-    const tokenAcceso = filteredElements[tokenIndex + 1];
-    const tokenInvitado = filteredElements[tokenIndex + 3];
-
-    const pdfObject = {
-        titulo: titulo,
-        centroDeJusticia: centroDeJusticia,
-        sala: sala,
-        agendada: agendada,
-        datosGenerales: {
-            numeroExpediente: numeroExpediente,
-            folio: folio,
-            juez: juez,
-            secretario: secretario,
-            // testigo: testigo,
-            parteActora: parteActora,
-            parteDemandada: parteDemandada,
-            centroJusticia: centroJusticia,
-            tipoAudicencia: tipoAudicencia,
-            tipoJuicio: tipoJuicio,
-            fechaCelebracion: fechaCelebracion,
-            horaInicio: horaInicio,
-            horaAFinalizar: horaAFinalizar,
-        },
-        participantes: participantes,
-        tokenAcceso: tokenAcceso,
-        tokenInvitado: tokenInvitado
-    }
-
-    console.log(`PDF Object: ${JSON.stringify(pdfObject)}`.bgCyan);
-
-    fs.writeFileSync(`./archivosPrueba/pdfObject-${pdfObject.datosGenerales.folio}.txt`, JSON.stringify(pdfObject));
-
-    return pdfObject;
 };
 
 module.exports = {getParticipantsFromHTML, convertPDFToObject};

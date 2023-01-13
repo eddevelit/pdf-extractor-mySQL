@@ -91,12 +91,10 @@ const processPDFDataIntoBD = async (pdfObject) => {
         // Inserting audiencias
         const salaId = await obtenerId('sala', pdfObject.sala, 'salas');
         const centroDeJusticiaId = await obtenerId('nombre', pdfObject.datosGenerales.centroJusticia, 'centro_justicias');
-        // TODO Determine what audience status should be added
-        // const estadoAudienciaId = await obtenerId('nombre', 'Pendiente', 'estado_audiencias');
         const tipoAudienciaId = await obtenerId('nombre', pdfObject.datosGenerales.tipoAudicencia, 'tipo_audiencias');
 
         insertFields = `centroJusticia_id, sala_id, tipo_id, expediente_id, estadoAudiencia_id, fechaCelebracion, horaInicio, horaFinalizar, created_at, updated_at`;
-        insertValues = `'${centroDeJusticiaId}', '${salaId}', '${tipoAudienciaId}', '${expediente.id}', '1', '${pdfObject.datosGenerales.fechaCelebracion}', '${pdfObject.datosGenerales.horaInicio}', '${pdfObject.datosGenerales.horaAFinalizar}', NOW(), NOW()`
+        insertValues = `'${centroDeJusticiaId}', '${salaId}', '${tipoAudienciaId}', '${expediente.id}', '6', '${pdfObject.datosGenerales.fechaCelebracion}', '${pdfObject.datosGenerales.horaInicio}', '${pdfObject.datosGenerales.horaAFinalizar}', NOW(), NOW()`
         const insercionAudiencia = await mySQLInsert(`audiencias`, insertFields, insertValues);
         console.log(insercionAudiencia.blue);
 

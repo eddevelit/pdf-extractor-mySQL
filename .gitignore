@@ -1,8 +1,14 @@
 node_modules/
-/.idea/
-/archivosPrueba/*.json
-/archivosPrueba/*.txt
-/archivosPrueba/*.html
-/archivosPrueba/*.png
-/archivosPrueba/*.css
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+### Carpeta prueba ###
+/archivosPrueba/
+*.json
+*.txt
+*.html
+*.png
+*.css
 

@@ -99,29 +99,46 @@ const processPDFDataIntoBD = async (pdfObject) => {
         console.log(insercionAudiencia.blue);
 
         // Inserting personal
-        insertFields = `nombre, rol_personal_id, audiencia_id, created_at, updated_at`;
+        const personalInsertFields = `nombre, rol_personal_id, audiencia_id, created_at, updated_at`;
+        const asistenciaInsertFields = `asistencia, color, personal_id, created_at, updated_at`;
         let insercionPersonal;
         const audiencia = await mysqlSelect(`audiencias`, `id`, ``, `order by id desc limit 1`);
 
         const juezRoleId = await obtenerId('tipo_personal', 'Juez', 'roles_personals');
         insertValues = `'${pdfObject.datosGenerales.juez}', '${juezRoleId}', '${audiencia.id}', NOW(), NOW()`
-        insercionPersonal = await mySQLInsert(`personal_audiencias`, insertFields, insertValues);
+        insercionPersonal = await mySQLInsert(`personal_audiencias`, personalInsertFields, insertValues);
         console.log(insercionPersonal.blue);
+        const juezId = await mysqlSelect(`personal_audiencias`, `id`, ``, `order by id desc limit 1`);
+        insertValues = `'Asistencia', 'bg-success', '${juezId.id}', NOW(), NOW()`;
+        const insercionAsistenciaJuez = await mySQLInsert(`asistencia_personal_audiencias`, asistenciaInsertFields, insertValues);
+        console.log(insercionAsistenciaJuez.blue);
 
         const secretarioRoleId = await obtenerId('tipo_personal', 'Secretario', 'roles_personals');
         insertValues = `'${pdfObject.datosGenerales.secretario}', '${secretarioRoleId}', '${audiencia.id}', NOW(), NOW()`
-        insercionPersonal = await mySQLInsert(`personal_audiencias`, insertFields, insertValues);
+        insercionPersonal = await mySQLInsert(`personal_audiencias`, personalInsertFields, insertValues);
         console.log(insercionPersonal.blue);
+        const secretarioId = await mysqlSelect(`personal_audiencias`, `id`, ``, `order by id desc limit 1`);
+        insertValues = `'Asistencia', 'bg-success', '${secretarioId.id}', NOW(), NOW()`;
+        const insercionAsistenciaSecretario = await mySQLInsert(`asistencia_personal_audiencias`, asistenciaInsertFields, insertValues);
+        console.log(insercionAsistenciaSecretario.blue);
 
         const parteActoraRoleId = await obtenerId('tipo_personal', 'Parte Actora', 'roles_personals');
         insertValues = `'${pdfObject.datosGenerales.parteActora}', '${parteActoraRoleId}', '${audiencia.id}', NOW(), NOW()`
-        insercionPersonal = await mySQLInsert(`personal_audiencias`, insertFields, insertValues);
+        insercionPersonal = await mySQLInsert(`personal_audiencias`, personalInsertFields, insertValues);
         console.log(insercionPersonal.blue);
+        const parteActoraId = await mysqlSelect(`personal_audiencias`, `id`, ``, `order by id desc limit 1`);
+        insertValues = `'Asistencia', 'bg-success', '${parteActoraId.id}', NOW(), NOW()`;
+        const insercionAsistenciaParteActora = await mySQLInsert(`asistencia_personal_audiencias`, asistenciaInsertFields, insertValues);
+        console.log(insercionAsistenciaParteActora.blue);
 
         const parteDemandadaRoleId = await obtenerId('tipo_personal', 'Parte Demandada', 'roles_personals');
         insertValues = `'${pdfObject.datosGenerales.parteDemandada}', '${parteDemandadaRoleId}', '${audiencia.id}', NOW(), NOW()`
-        insercionPersonal = await mySQLInsert(`personal_audiencias`, insertFields, insertValues);
+        insercionPersonal = await mySQLInsert(`personal_audiencias`, personalInsertFields, insertValues);
         console.log(insercionPersonal.blue);
+        const parteDemandadaId = await mysqlSelect(`personal_audiencias`, `id`, ``, `order by id desc limit 1`);
+        insertValues = `'Asistencia', 'bg-success', '${parteDemandadaId.id}', NOW(), NOW()`;
+        const insercionAsistenciaParteDemandada = await mySQLInsert(`asistencia_personal_audiencias`, asistenciaInsertFields, insertValues);
+        console.log(insercionAsistenciaParteDemandada.blue);
 
         return `PDF procesado a base de datos de forma exitosa :)`.green;
 

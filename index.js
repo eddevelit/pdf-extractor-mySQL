@@ -14,6 +14,7 @@ fs.readdir(directoryPath, async (err, files) => {
     }
 
     for (let i = 0; i < files.length; i++) {
+        if (!files[i].endsWith('.pdf'))  continue;
         const filePath = path.join(directoryPath, files[i]);
         await extractPDFData(filePath);
         const pdfObject = await convertPDFToObject(filePath);

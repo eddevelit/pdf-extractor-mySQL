@@ -15,6 +15,7 @@
     "pdf-extract": "^1.0.11",
     "pdf-extractor": "^2.2.0",
     "pdf-table-extractor": "^1.0.3",
-    "ssh2": "^1.11.0"
+    "ssh2": "^1.11.0",
+    "yargs": "^17.6.2"
   }
 }

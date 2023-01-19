@@ -5,8 +5,9 @@ const {extractPDFData} = require("./utils/pdfExtractor.js");
 const fs = require('fs');
 const path = require('path');
 require('colors');
+const argv = require('./config/yargs');
 
-const directoryPath = path.join('F:', 'Personal', 'Documents', 'Onikom', 'Argumentalia', 'MuestrasPDF');
+const directoryPath = argv.p;
 fs.readdir(directoryPath, async (err, files) => {
 
     if (err) {

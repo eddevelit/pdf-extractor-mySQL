@@ -7,11 +7,11 @@ const path = require('path');
 require('colors');
 const argv = require('./config/yargs');
 
-const directoryPath = argv.p;
+const directoryPath = argv.p.replace(/\\/g, '/');
 fs.readdir(directoryPath, async (err, files) => {
 
     if (err) {
-        return console.log(`No se encontró el directorio: ${directoryPath} `.red + err);
+        return console.log(`No se encontró el directorio: ${directoryPath}, `.red + err);
     }
 
     for (let i = 0; i < files.length; i++) {
@@ -22,7 +22,9 @@ fs.readdir(directoryPath, async (err, files) => {
         const bdResult = await processPDFDataIntoBD(pdfObject);
         console.log(bdResult);
     }
+
     await pool.end();
+
 });
 
 
